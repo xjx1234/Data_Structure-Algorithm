@@ -39,10 +39,21 @@ func (L *SingleLinkList) IsEmpty() bool {
 	return L.Size == 0
 }
 
+//打印链表信息
 func (L *SingleLinkList) Print() {
 	if L.Size == 0 {
 		fmt.Println("单链表为空")
 	}
+	format := ""
+	p := L.Head.Next
+	for p != nil {
+		format += fmt.Sprintf("%+v", p.Data)
+		if p.Next != nil {
+			format += "->"
+		}
+		p = p.Next
+	}
+	fmt.Println(format)
 }
 
 /*
@@ -53,21 +64,102 @@ func (L *SingleLinkList) InsertNode(value interface{}, index int) {
 	if index > L.Size || index < 0 {
 		panic("index out of range")
 	}
-	preNode := L.Head
-	for i := 0; i < index; i++ {
-		preNode = preNode.Next
+	findNode := new(SingleLinkNode)
+	if index == 0 && L.Size == 0 {
+		findNode = L.Head
+	} else {
+		findNode = L.FindByIndex(index)
+		fmt.Printf("%+v", findNode)
 	}
 	curNode := &SingleLinkNode{
 		Data: value,
-		Next: preNode.Next,
+		Next: findNode.Next,
 	}
-	preNode.Next = curNode
+	findNode.Next = curNode
 	L.Size++
 }
 
-func main() {
+/*
+	根据序号移除指定节点
+	虽然删除操作时间复杂度为O(1),但由于需要遍历index位置,所以删除最终操作的时间为复杂度为O(n)
+*/
+func (L *SingleLinkList) RemoveNode(index int) {
+	if index > L.Size || index < 0 || (L.Size == 0 && index == 0) {
+		panic("index out of range")
+	}
+	if index == 0 {
+		if L.Size == 1 {
+			L.Head.Next = nil
+		} else {
+			zeroNode := L.Head.Next
+			L.Head.Next = zeroNode.Next
+		}
+	} else {
+		findNode := L.FindByIndex(index)
+		nextNode := findNode.Next
+		findNode.Next = nextNode.Next
+	}
+	L.Size--
+}
 
+func (L *SingleLinkList) UpdateNode(index int, data interface{}) {
+	if index > L.Size || index < 0 || (L.Size == 0 && index == 0) {
+		panic("index out of range")
+	}
+	updateNode := L.FindByIndex(index)
+	updateNode.Data = data
+}
+
+/*
+	根据序号查询指定节点信息
+*/
+func (L *SingleLinkList) FindByIndex(index int) *SingleLinkNode {
+	if index > L.Size || index < 0 || (L.Size == 0 && index == 0) {
+		panic("index out of range")
+	}
+	curNode := L.Head.Next
+	for i := 0; i < index; i++ {
+		curNode = curNode.Next
+
+	}
+	return curNode
+}
+
+/*
+	根据值查询节点信息
+*/
+func (L *SingleLinkList) FindByData(data interface{}) (int, *SingleLinkNode) {
+	curNode := L.Head.Next
+	index := -1
+	findNode := new(SingleLinkNode)
+	for i := 0; i < L.Size; i++ {
+		if curNode.Data == data {
+			index = i
+			findNode = curNode
+			break
+		}
+		curNode = curNode.Next
+	}
+	return index, findNode
+}
+
+func main() {
 	linkList := new(SingleLinkList)
 	linkList.InitLink()
+	linkList.InsertNode("11111", 0)
+	linkList.InsertNode("2222", 1)
+	//linkList.InsertNode("3333", 2)
+	//linkList.InsertNode("xxxx", 3)
+	//linkList.InsertNode("zzzzzz", 4)
+	linkList.Print()
+	/*linkList.RemoveNode(0)
+	linkList.Print()
+	linkList.RemoveNode(1)
+	linkList.Print()
+	index, _ := linkList.FindByData("zzzzzz")
+	fmt.Println(index)
+	//fmt.Printf("%+v", node)
+	linkList.UpdateNode(0, "hello")
+	linkList.Print()*/
 
 }
