@@ -64,18 +64,22 @@ func (L *SingleLinkList) InsertNode(value interface{}, index int) {
 	if index > L.Size || index < 0 {
 		panic("index out of range")
 	}
+	preNode := new(SingleLinkNode)
 	findNode := new(SingleLinkNode)
-	if index == 0 && L.Size == 0 {
-		findNode = L.Head
+	if index == 0 {
+		preNode = L.Head
+		if L.Size != 0 {
+			findNode = L.FindByIndex(0)
+		}
 	} else {
-		findNode = L.FindByIndex(index)
-		fmt.Printf("%+v", findNode)
+		preNode = L.FindByIndex(index - 1)
+		findNode = preNode.Next
 	}
 	curNode := &SingleLinkNode{
 		Data: value,
-		Next: findNode.Next,
+		Next: findNode,
 	}
-	findNode.Next = curNode
+	preNode.Next = curNode
 	L.Size++
 }
 
@@ -95,7 +99,7 @@ func (L *SingleLinkList) RemoveNode(index int) {
 			L.Head.Next = zeroNode.Next
 		}
 	} else {
-		findNode := L.FindByIndex(index)
+		findNode := L.FindByIndex(index - 1)
 		nextNode := findNode.Next
 		findNode.Next = nextNode.Next
 	}
@@ -146,20 +150,20 @@ func (L *SingleLinkList) FindByData(data interface{}) (int, *SingleLinkNode) {
 func main() {
 	linkList := new(SingleLinkList)
 	linkList.InitLink()
-	linkList.InsertNode("11111", 0)
-	linkList.InsertNode("2222", 1)
-	//linkList.InsertNode("3333", 2)
-	//linkList.InsertNode("xxxx", 3)
-	//linkList.InsertNode("zzzzzz", 4)
+	linkList.InsertNode("node-0", 0)
+	linkList.InsertNode("node-new-0", 0)
+	linkList.InsertNode("node-1", 1)
+	linkList.InsertNode("node-2", 2)
+	linkList.InsertNode("node-3", 3)
+	linkList.InsertNode("node-4", 4)
 	linkList.Print()
-	/*linkList.RemoveNode(0)
+	linkList.RemoveNode(0)
 	linkList.Print()
 	linkList.RemoveNode(1)
 	linkList.Print()
-	index, _ := linkList.FindByData("zzzzzz")
+	index, node := linkList.FindByData("node-4")
 	fmt.Println(index)
-	//fmt.Printf("%+v", node)
-	linkList.UpdateNode(0, "hello")
-	linkList.Print()*/
-
+	fmt.Printf("%+v", node)
+	linkList.UpdateNode(2, "node-new4")
+	linkList.Print()
 }
