@@ -79,6 +79,9 @@ func (L *SingleLinkList) InsertNode(value interface{}, index int) {
 		Data: value,
 		Next: findNode,
 	}
+	if index == L.Size {
+		curNode.Next = nil
+	}
 	preNode.Next = curNode
 	L.Size++
 }

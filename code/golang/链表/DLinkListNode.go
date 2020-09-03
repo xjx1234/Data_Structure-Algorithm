@@ -104,6 +104,9 @@ func (D *DLinkList) InsertDNode(index int, data interface{}) {
 		Next: findNode,
 		Prev: prevNode,
 	}
+	if index == D.Size {
+		newNode.Next = nil
+	}
 	prevNode.Next = newNode
 	D.Size++
 }
