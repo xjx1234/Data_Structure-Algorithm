@@ -7,6 +7,8 @@
 
 package main
 
+import "fmt"
+
 func counting_sort(data []int) []int {
 	if len(data) <= 1 {
 		return data
@@ -42,7 +44,7 @@ func counting_sort(data []int) []int {
 }
 
 func main() {
-	data := []int{1, 2, 3, 4, 5, 6, 7, 8, 8, 11}
-	counting_sort(data)
-	//fmt.Println(d)
+	data := []int{5, 1, 2, 3, 4, 5, 6, 7, 8, 8, 11}
+	d := counting_sort(data)
+	fmt.Println(d)
 }
