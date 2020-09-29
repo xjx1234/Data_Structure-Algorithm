@@ -23,6 +23,7 @@ func serach(nums []int, target int) int {
 		high := len - 1
 		for low <= high {
 			mid = (low + high) >> 1
+			fmt.Println(low, high, mid)
 			if nums[mid] == target {
 				return mid
 			} else if nums[mid] > target {
@@ -58,11 +59,15 @@ func bsearch(nums []int, low, high, target int) int {
 }
 
 func main() {
-	data := []int{-1, 0, 3, 5, 9, 12}
-	key := serach(data, 4)
+	data := []int{}
+	for i := 0; i < 51; i++ {
+		data = append(data, i)
+	}
+
+	key := serach(data, 5)
 	fmt.Println("查询结果:", key)
-	key2 := serach(data, 9)
-	fmt.Println("查询结果:", key2)
-	key3 := serachByRecursion(data, 5)
-	fmt.Println("查询结果:", key3)
+	//key2 := serach(data, 9)
+	//fmt.Println("查询结果:", key2)
+	//key3 := serachByRecursion(data, 5)
+	//fmt.Println("查询结果:", key3)
 }
