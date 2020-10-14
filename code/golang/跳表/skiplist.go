@@ -8,6 +8,7 @@
 package main
 
 import (
+	"fmt"
 	"math/rand"
 	"time"
 )
@@ -22,7 +23,7 @@ type SkipNode struct {
 	nextNode []*SkipNode
 }
 
-type SkipList struct {
+type Skiplist struct {
 	level int
 	head  *SkipNode
 }
@@ -41,18 +42,89 @@ func newNode(data int, level int) *SkipNode {
 }
 
 /** 初始哈跳表 */
-func Constructor() SkipList {
-	return SkipList{head: newNode(0, MaxLevel), level: 1}
+func Constructor() Skiplist {
+	return Skiplist{head: newNode(0, MaxLevel), level: 1}
 }
 
-/** 添加跳表数据 */
-func (slist *SkipList) Add(num int) {
-	current := slist.head
-	for i := slist.level - 1; i >= 0; i-- {
+/** 搜索跳表元素 */
+func (this *Skiplist) Search(target int) bool {
+	current := this.head
+	for i := this.level - 1; i >= 0; i-- {
+		for current.nextNode[i] != nil {
+			if current.nextNode[i].data == target {
+				return true
+			} else if current.nextNode[i].data > target {
+				break
+			} else {
+				current = current.nextNode[i]
+			}
+		}
+	}
+	return false
+}
 
+/** 添加跳表元素 */
+func (this *Skiplist) Add(num int) {
+	current := this.head
+	updateNode := make([]*SkipNode, MaxLevel)
+
+	for i := this.level - 1; i >= 0; i-- {
+		if current.nextNode[i] == nil || current.nextNode[i].data > num {
+			updateNode[i] = current
+		} else {
+			for current.nextNode[i] != nil && current.nextNode[i].data < num {
+				current = current.nextNode[i]
+			}
+			updateNode[i] = current
+		}
+	}
+
+	level := randLevel()
+	if level > this.level {
+		for i := this.level; i < level; i++ {
+			updateNode[i] = this.head
+		}
+		this.level = level
+	}
+
+	node := newNode(num, level)
+	for i := 0; i < level; i++ {
+		node.nextNode[i] = updateNode[i].nextNode[i]
+		updateNode[i].nextNode[i] = node
 	}
 }
 
-func main() {
+/** 删除跳表元素 */
+func (this *Skiplist) Erase(num int) bool {
+	current := this.head
+	flag := false
+	for i := this.level - 1; i >= 0; i-- {
+		for current.nextNode[i] != nil {
+			if current.nextNode[i].data == num {
+				tmp := current.nextNode[i]
+				current.nextNode[i] = tmp.nextNode[i]
+				tmp.nextNode[i] = nil
+				flag = true
+				break
+			} else if current.nextNode[i].data > num {
+				break
+			} else {
+				current = current.nextNode[i]
+			}
+		}
+	}
+	return flag
+}
 
+func main() {
+	s := Constructor()
+	s.Add(2)
+	s.Add(3)
+	s.Add(4)
+	s.Add(5)
+	s.Add(6)
+	s.Add(7)
+	s.Add(8)
+	fmt.Printf("%v", s.head.nextNode)
+	fmt.Println(s.Search(5))
 }
