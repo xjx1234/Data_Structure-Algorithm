@@ -63,35 +63,35 @@ func (this *Skiplist) Search(target int) bool {
 	return false
 }
 
-/** 添加跳表元素 */
 func (this *Skiplist) Add(num int) {
-	current := this.head
+	currentNode := this.head
 	updateNode := make([]*SkipNode, MaxLevel)
 
 	for i := this.level - 1; i >= 0; i-- {
-		if current.nextNode[i] == nil || current.nextNode[i].data > num {
-			updateNode[i] = current
+		if currentNode.nextNode[i] == nil || currentNode.nextNode[i].data > num {
+			updateNode[i] = currentNode
 		} else {
-			for current.nextNode[i] != nil && current.nextNode[i].data < num {
-				current = current.nextNode[i]
+			for currentNode.nextNode[i] != nil && currentNode.nextNode[i].data < num {
+				currentNode = currentNode.nextNode[i]
 			}
-			updateNode[i] = current
+			updateNode[i] = currentNode
 		}
 	}
 
 	level := randLevel()
 	if level > this.level {
-		for i := this.level; i < level; i++ {
-			updateNode[i] = this.head
+		for l := this.level; l < level; l++ {
+			updateNode[l] = this.head
 		}
 		this.level = level
 	}
+	newNode := newNode(num, MaxLevel)
 
-	node := newNode(num, level)
-	for i := 0; i < level; i++ {
-		node.nextNode[i] = updateNode[i].nextNode[i]
-		updateNode[i].nextNode[i] = node
+	for j := 0; j < this.level; j++ {
+		newNode.nextNode[j] = updateNode[j].nextNode[j]
+		updateNode[j].nextNode[j] = newNode
 	}
+
 }
 
 /** 删除跳表元素 */
@@ -118,13 +118,8 @@ func (this *Skiplist) Erase(num int) bool {
 
 func main() {
 	s := Constructor()
-	s.Add(2)
+	s.Add(10)
 	s.Add(3)
-	s.Add(4)
-	s.Add(5)
-	s.Add(6)
-	s.Add(7)
-	s.Add(8)
 	fmt.Printf("%v", s.head.nextNode)
 	fmt.Println(s.Search(5))
 }
