@@ -146,7 +146,7 @@ func (t *RBTree) insert(val int) {
  * @param n 最新插入节点
 */
 func (t *RBTree) insertBalance(n *RBNode) {
-	if !isBlack(n.Father) { //父节点如果是黑色节点，则不需要调整
+	for !isBlack(n.Father) { //父节点如果是黑色节点，则不需要调整
 		uncleNode := t.SerachBroNode(n)
 		if !isBlack(uncleNode) {
 			n.Father.Color = Black
@@ -178,8 +178,98 @@ func (t *RBTree) insertBalance(n *RBNode) {
 	}
 }
 
-func (t *RBTree) deleteNode(n *RBNode) {
+/**
+ * @Description: 删除节点
+ * @receiver t 红黑树
+ * @param v 需要删除的值
+ */
+func (t *RBTree) deleteNode(v int) {
+	findNode := t.Serach(v)
+	if findNode == nil {
+		return
+	}
+	fixColor := findNode.Color
+	fixNode := &RBNode{Color: Black, Father: findNode.Father}
+	if findNode.Left == nil { //如果该节点为单子树，则该节点左节点为空，则用右节点替换
+		t.replaceNode(findNode, findNode.Right)
+		if findNode.Right != nil {
+			fixNode = findNode.Right
+		}
+	} else if findNode.Right == nil { //如果该节点为单子树，则该节点右节点为空，则用左节点替换
+		t.replaceNode(findNode, findNode.Left)
+		if findNode.Left != nil {
+			fixNode = findNode.Left
+		}
+	} else {
+		succNode := t.findSucceedNode(findNode.Right) //查找后继节点
+		fixColor = succNode.Color
 
+		if succNode.Right == nil {
+			if succNode.Father != findNode {
+				fixNode = &RBNode{Father: succNode.Father, Color: Black}
+			} else {
+				fixNode = &RBNode{Father: succNode, Color: Black}
+			}
+		} else {
+			fixNode = succNode.Right
+		}
+		if succNode.Father != findNode {
+			t.replaceNode(succNode, succNode.Right)
+			succNode.Right = findNode.Right
+			succNode.Right.Father = succNode
+		}
+		t.replaceNode(findNode, succNode)
+		succNode.Left = findNode.Left
+		succNode.Left.Father = succNode
+		succNode.Color = findNode.Color
+	}
+	if fixColor == Black {
+		t.deleteBalance(fixNode)
+	}
+}
+
+/**
+ * @Description: 删除后再平衡
+ * @receiver t 红黑树
+ * @param n 开始平衡的节点
+ */
+func (t *RBTree) deleteBalance(n *RBNode) {
+
+}
+
+/**
+ * @Description: 替换节点
+ * @receiver t 红黑树
+ * @param findNode 当前节点
+ * @param replaceNode 需要替换的节点
+ */
+func (t *RBTree) replaceNode(findNode, replaceNode *RBNode) {
+	if findNode.Father == nil { //如果当前节点父节点为空
+		t.root = replaceNode //设置替代节点为根节点
+		if replaceNode != nil {
+			replaceNode.Father = nil
+		}
+	} else if findNode == findNode.Father.Left {
+		findNode.Father.Left = replaceNode //替换当前节点父节点的左节点为替代节点
+	} else {
+		findNode.Father.Right = replaceNode //替换当前节点父节点的右节点为替代节点
+	}
+	if replaceNode != nil {
+		replaceNode.Father = findNode.Father //将替代节点的父节点设置为当前节点的父节点
+	}
+}
+
+/**
+ * @Description: 查找后继节点
+ * @receiver t 红黑树
+ * @param n 开始搜索节点
+ * @return *RBNode 返回后继节点
+ */
+func (t *RBTree) findSucceedNode(n *RBNode) *RBNode {
+	for n.Left != nil {
+		n = n.Left
+	}
+	return n
 }
 
 /**
