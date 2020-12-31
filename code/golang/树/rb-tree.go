@@ -183,48 +183,53 @@ func (t *RBTree) insertBalance(n *RBNode) {
  * @receiver t 红黑树
  * @param v 需要删除的值
  */
+
 func (t *RBTree) deleteNode(v int) {
 	findNode := t.Serach(v)
 	if findNode == nil {
 		return
 	}
-	fixColor := findNode.Color
-	fixNode := &RBNode{Color: Black, Father: findNode.Father}
-	if findNode.Left == nil { //如果该节点为单子树，则该节点左节点为空，则用右节点替换
-		t.replaceNode(findNode, findNode.Right)
-		if findNode.Right != nil {
-			fixNode = findNode.Right
-		}
-	} else if findNode.Right == nil { //如果该节点为单子树，则该节点右节点为空，则用左节点替换
-		t.replaceNode(findNode, findNode.Left)
-		if findNode.Left != nil {
-			fixNode = findNode.Left
-		}
-	} else {
-		succNode := t.findSucceedNode(findNode.Right) //查找后继节点
-		fixColor = succNode.Color
-
-		if succNode.Right == nil {
-			if succNode.Father != findNode {
-				fixNode = &RBNode{Father: succNode.Father, Color: Black}
-			} else {
-				fixNode = &RBNode{Father: succNode, Color: Black}
-			}
-		} else {
-			fixNode = succNode.Right
-		}
-		if succNode.Father != findNode {
-			t.replaceNode(succNode, succNode.Right)
-			succNode.Right = findNode.Right
-			succNode.Right.Father = succNode
-		}
-		t.replaceNode(findNode, succNode)
-		succNode.Left = findNode.Left
-		succNode.Left.Father = succNode
-		succNode.Color = findNode.Color
+	if findNode.Left != nil && findNode.Right != nil { //删除的节点有2个子节点,则寻找后继节点，将后继节点得值赋予删除节点后转换为删除叶子节点问题
+		succNode := t.findSucceedNode(findNode.Right)
+		findNode.Val = succNode.Val
+		findNode = succNode
 	}
-	if fixColor == Black {
-		t.deleteBalance(fixNode)
+
+	if findNode.Father == nil { //删除节点父节点为空，则该节点为根节点，设置根节点为空
+		t.root = nil
+	} else if findNode.Left == nil && findNode.Right == nil { //删除节点为叶子节点
+		/** 如果删除节点为黑色节点，则先调整节点*/
+		if findNode.Color == Black {
+			t.deleteBalance(findNode)
+		}
+		if findNode.Father != nil {
+			if findNode.Father.Left == findNode { //删除节点为左节点，则直接删除左节点
+				findNode.Father.Left = nil
+			} else if findNode.Father.Right == findNode {
+				findNode.Father.Right = nil //删除节点为右节点，则直接删除右节点
+			}
+			findNode.Father = nil //将父节点只为空
+		}
+	} else { //左右节点有不为空得情况
+		/** 替代节点选左右节点其中一个，优先左节点 */
+		replaceNode := findNode.Left
+		if replaceNode == nil {
+			replaceNode = findNode.Right
+		}
+		replaceNode.Father = findNode.Father //设置替换节点父亲为被替换节点的父亲
+		if findNode.Father == nil {
+			t.root = replaceNode
+		} else if findNode == findNode.Father.Left { //删除节点为左节点,则将删除节点的父节点的左节点替换为替换节点
+			findNode.Father.Left = replaceNode
+		} else {
+			findNode.Father.Right = replaceNode //删除节点为右节点,则将删除节点的父节点的右节点替换为替换节点
+		}
+		findNode.Left = nil
+		findNode.Right = nil
+		findNode.Father = nil
+		if findNode.Color == Black {
+			t.deleteBalance(replaceNode)
+		}
 	}
 }
 
@@ -234,7 +239,61 @@ func (t *RBTree) deleteNode(v int) {
  * @param n 开始平衡的节点
  */
 func (t *RBTree) deleteBalance(n *RBNode) {
-
+	if t.root == nil {
+		return
+	}
+	for n != t.root && isBlack(n) {
+		if n == n.Father.Left {
+			rNode := n.Father.Right
+			if !isBlack(rNode) {
+				setColor(rNode, Black)
+				setColor(rNode.Father, Red)
+				t.leftRotate(rNode.Father)
+				rNode = n.Father.Right
+			}
+			if isBlack(rNode.Left) && isBlack(rNode.Right) { //无节点替换，则递归向上寻找平衡
+				setColor(rNode, Red)
+				n = n.Father
+			} else {
+				if isBlack(rNode.Right) {
+					setColor(rNode.Left, Black)
+					setColor(rNode, Red)
+					t.rightRotate(rNode)
+					rNode = n.Father.Right
+				}
+				setColor(rNode, n.Father.Color)
+				setColor(n.Father, Black)
+				setColor(rNode.Right, Black)
+				t.leftRotate(n.Father)
+				n = t.root
+			}
+		} else {
+			rNode := n.Father.Left
+			if !isBlack(rNode) {
+				setColor(rNode, Black)
+				setColor(rNode.Father, Red)
+				t.rightRotate(rNode.Father)
+				rNode = n.Father.Left
+			}
+			if isBlack(rNode.Left) || isBlack(rNode.Right) {
+				setColor(rNode, Red)
+				n = n.Father
+			} else {
+				if isBlack(rNode.Left) {
+					setColor(rNode.Right, Black)
+					setColor(rNode, Red)
+					t.leftRotate(rNode)
+					rNode = n.Father.Left
+				}
+				setColor(rNode, n.Father.Color)
+				setColor(n.Father, Black)
+				setColor(rNode.Left, Black)
+				t.rightRotate(n.Father)
+				n = t.root
+			}
+		}
+	}
+	n.Color = Black //替代节点是红色，则变色，变黑
 }
 
 /**
